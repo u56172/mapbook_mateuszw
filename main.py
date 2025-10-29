@@ -30,6 +30,15 @@ def remove_user(users_data: list) -> None:
         if user['name'] == tmp_name:
             users.pop(users.index(user))
 
+def update_user(users_data: list) -> None:
+    print('Wybrano funkcje aktualizacji użytkownika')
+    tmp_name: str = input('Enter old name: ')
+    for user in users:
+        if user['name'] == tmp_name:
+            user['name'] = input('Enter new name: ')
+            user['location'] = input('Enter new location: ')
+            user['posts'] = input('Enter new amount of posts: ')
+
 if __name__ == '__main__':
     while True:
         tmp_choice:int= int(input('Wybierz opcje menu: '))
@@ -42,4 +51,4 @@ if __name__ == '__main__':
         if tmp_choice == 3:
             remove_user(users)
         if tmp_choice == 4:
-            print('Wybrano funkcje aktualizacji znajomych')
+            update_user(users)
