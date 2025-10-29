@@ -23,7 +23,12 @@ def add_user(users_data: list) -> None:
     users_data.append({'name': name, 'location': location, 'posts': posts})
     print('User added!')
 
-
+def remove_user(users_data: list) -> None:
+    print('Wybrano funkcje usuwania znajomego')
+    tmp_name: str = input('Enter your name: ')
+    for user in users:
+        if user['name'] == tmp_name:
+            users.pop(users.index(user))
 
 if __name__ == '__main__':
     while True:
@@ -35,6 +40,6 @@ if __name__ == '__main__':
         if tmp_choice == 2:
             add_user(users)
         if tmp_choice == 3:
-            print('Wybrano funkcje usuwania znajomych')
+            remove_user(users)
         if tmp_choice == 4:
             print('Wybrano funkcje aktualizacji znajomych')
