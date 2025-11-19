@@ -15,8 +15,8 @@ ramka_mapa=Frame(root)
 
 ramka_lista_obiektow.grid(row=0, column=0)
 ramka_formularz.grid(row=0, column=1)
-ramka_szczegoly_obiektu.grid(row=1, column=0)
-ramka_mapa.grid(row=2, column=0)
+ramka_szczegoly_obiektu.grid(row=1, column=0, columnspan=2)
+ramka_mapa.grid(row=2, column=0, columnspan=2)
 
 # RAMKA LISTA OBIEKTÓW
 label_lista_obiektow = Label(ramka_lista_obiektow, text='LISTA OBIEKTÓW')
@@ -74,7 +74,7 @@ button_dodaj_obiekt.grid(row=5, column=0, columnspan=2)
 
 # RAMKA SZCZEGÓŁY OBIEKTÓW
 label_szczegoly_obiektu = Label(ramka_szczegoly_obiektu, text='Szczegoly obiektu')
-label_szczegoly_obiektu.grid(row=6, column=0, sticky=W)
+label_szczegoly_obiektu.grid(row=0, column=0, sticky=W)
 
 label_imie_szczegoly_obiektu = Label(ramka_szczegoly_obiektu, text='Imie: ')
 label_imie_szczegoly_obiektu.grid(row=1, column=0)
