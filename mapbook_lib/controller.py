@@ -1,78 +1,77 @@
-import requests
-from bs4 import BeautifulSoup
-
-class User:
-    def __init__(self, name:str, location: str, posts: int, photo:str):
-        self.name = name
-        self.location = location
-        self.posts = posts
-        self.photo = photo
-        self.coords = self.get_coordinates()
-
-    def get_coordinates(self) -> list:
-        import requests
-        from bs4 import BeautifulSoup
-        url: str = f'https://pl.wikipedia.org/wiki/{self.location}'
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                          'AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/118.0 Safari/537.36'
-        }
-        response = requests.get(url, headers=headers)
-        response_html = BeautifulSoup(response.text, 'html.parser')
-
-        latitude = float(response_html.select('.latitude')[1].text.replace(',', '.'))
-        longitude = float(response_html.select('.longitude')[1].text.replace(',', '.'))
-        return [latitude, longitude]
+from mapbook_lib.model import User, users
 
 
-def user_info(users_data: list) -> None:
-    print('Wybrano funkcje wyświetlania aktywności znajomych')
-    for user in users_data:
-        print(f'Your user {user.name}, from {user.location}, has {user.posts} posts.')
+def add_user(view, users_data: list) -> None:
+    name: str = view.entry_name.get()
+    location: str = view.entry_lokalizacja.get()
+    post: int = int(view.entry_posty.get())
+    photo: str = view.entry_photo.get()
 
-def add_user(users_data: list) -> None:
-    print('Wybrano funkcje dodawania znajomego')
-    name: str = input('Enter your name: ')
-    location: str = input('Enter your location: ')
-    posts: int = int(input('Enter number of posts: '))
-    photo: str = input('Enter photo url: ')
-    users_data.append(User(name=name, location=location, posts=posts, photo=photo))
-    print('User added!')
+    user = User(name=name, location=location, posts=post, photo=photo, map_widget=view.map_widget)
+    users_data.append(user)
 
-def remove_user(users_data: list) -> None:
-    print('Wybrano funkcje usuwania znajomego')
-    tmp_name: str = input('Enter your name: ')
-    for user in users_data:
-        if user.name == tmp_name:
-            users_data.pop(users_data.index(user))
+    user_info(view, users_data)
 
-def update_user(users_data: list) -> None:
-    print('Wybrano funkcje aktualizacji użytkownika')
-    tmp_name: str = input('Enter old name: ')
-    for user in users_data:
-        if user.name == tmp_name:
-            user.name = input('Enter new name: ')
-            user.location = input('Enter new location: ')
-            user.posts = input('Enter new amount of posts: ')
-            user.photo = input('Enter new photo url: ')
-            user.coords = user.get_coordinates()
+    view.entry_name.delete(0, 'end')
+    view.entry_lokalizacja.delete(0, 'end')
+    view.entry_posty.delete(0, 'end')
+    view.entry_photo.delete(0, 'end')
+    view.entry_name.focus()
 
-def get_map(users_data: list) -> None:
-    import folium
-    print('Wybrano funkcje wyświetlania mapy')
-    m = folium.Map(location=[52.23, 21.0], zoom_start=6)
 
-    for user in users_data:
-        folium.Marker(
-            location=user.coords,
-            tooltip="Click me!",
-            popup=f'<center><h3><b>{user.name} {user.location} {user.posts}</b></h3></center>, <img src = {user.photo}/> ',
-            icon=folium.Icon(color='purple', border_color = 'pink', icon="star"),
-        ).add_to(m)
-    m.save('mapa.html')
+def user_info(view, users_data: list) -> None:
+    view.listbox_lista_obiektow.delete(0, 'end')
+    for idx, user in enumerate(users_data):
+        view.listbox_lista_obiektow.insert(idx, f'{user.name} {user.location} {user.posts}')
 
-if __name__ == '__main__':
-    users_data = []
-    add_user(users_data)
-    remove_user(users_data)
+
+def delete_user(view, users_data: list) -> None:
+    i = view.listbox_lista_obiektow.index('active')
+
+    users_data[i].marker.delete()
+    users_data.pop(i)
+
+    user_info(view, users_data)
+
+
+def user_details(view, users_data: list) -> None:
+    i = view.listbox_lista_obiektow.index('active')
+
+    view.label_imie_szczegoly_obiektu_wartosc.config(text=users_data[i].name)
+    view.label_lokalizacja_szczegoly_obiektu_wartosc.config(text=users_data[i].location)
+    view.label_posty_szczegoly_obiektu_wartosc.config(text=users_data[i].posts)
+
+    view.map_widget.set_position(users_data[i].coords[0], users_data[i].coords[1])
+    view.map_widget.set_zoom(16)
+
+
+def edit_user(view, users_data: list) -> None:
+    i = view.listbox_lista_obiektow.index('active')
+
+    view.entry_name.insert(0, users_data[i].name)
+    view.entry_lokalizacja.insert(0, users_data[i].location)
+    view.entry_posty.insert(0, users_data[i].posts)
+    view.entry_photo.insert(0, users_data[i].photo)
+
+    view.button_dodaj_obiekt.config(text='Zapisz zmiany', command=lambda: update_user(view, users_data, i))
+
+
+def update_user(view, users_data: list, i) -> None:
+    users_data[i].name = view.entry_name.get()
+    users_data[i].location = view.entry_lokalizacja.get()
+    users_data[i].posts = int(view.entry_posty.get())
+    users_data[i].photo = view.entry_photo.get()
+
+    users_data[i].coords = users_data[i].get_coordinates()
+    users_data[i].marker.set_position(users_data[i].coords[0], users_data[i].coords[1])
+    users_data[i].marker.set_text(users_data[i].name)
+
+    user_info(view, users_data)
+
+    view.button_dodaj_obiekt.config(text='Dodaj użytkownika', command=lambda: add_user(view, users_data))
+
+    view.entry_name.delete(0, 'end')
+    view.entry_lokalizacja.delete(0, 'end')
+    view.entry_posty.delete(0, 'end')
+    view.entry_photo.delete(0, 'end')
+    view.entry_name.focus()
